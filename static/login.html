@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - Retail AI Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-color: #f8fafc;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+            color: var(--text-color);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 40px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 32px;
+        }
+
+        .customer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 8px;
+            margin-bottom: 20px;
+        }
+
+        .customer-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .customer-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .customer-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .customer-item:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            transform: scale(1.02);
+        }
+
+        .customer-item.selected {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .info {
+            flex: 1;
+        }
+
+        .name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: block;
+        }
+
+        .store {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            padding: 20px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo">🏪</div>
+    <h1>Chào mừng bạn trở lại</h1>
+    <p>Vui lòng lựa chọn tài khoản Khách hàng để bắt đầu</p>
+
+    <div class="customer-list" id="customer-list">
+        <div class="loading">Đang tải danh sách khách hàng...</div>
+    </div>
+
+    <button id="login-btn" disabled>Bắt đầu phiên làm việc</button>
+</div>
+
+<script>
+    let selectedCustomer = null;
+    const listEl = document.getElementById('customer-list');
+    const loginBtn = document.getElementById('login-btn');
+
+    // Fetch customers
+    async function loadCustomers() {
+        try {
+            const res = await fetch('/api/customers');
+            const customers = await res.json();
+            
+            listEl.innerHTML = '';
+            if (customers.length === 0) {
+                listEl.innerHTML = '<div class="loading">Không tìm thấy dữ liệu khách hàng.</div>';
+                return;
+            }
+
+            customers.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'customer-item';
+                item.innerHTML = `
+                    <div class="avatar">${user.customer_name.charAt(0)}</div>
+                    <div class="info">
+                        <span class="name">${user.customer_name}</span>
+                        <span class="store">Cửa hàng: ${user.store_id}</span>
+                    </div>
+                `;
+                item.onclick = () => {
+                    document.querySelectorAll('.customer-item').forEach(el => el.classList.remove('selected'));
+                    item.classList.add('selected');
+                    selectedCustomer = user;
+                    loginBtn.disabled = false;
+                };
+                listEl.appendChild(item);
+            });
+        } catch (err) {
+            listEl.innerHTML = '<div class="loading" style="color: #ef4444">Lỗi tải dữ liệu.</div>';
+        }
+    }
+
+    loginBtn.onclick = () => {
+        if (selectedCustomer) {
+            localStorage.setItem('retail_user', JSON.stringify(selectedCustomer));
+            window.location.href = '/static/index.html';
+        }
+    };
+
+    loadCustomers();
+</script>
+
+</body>
+</html>

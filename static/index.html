@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Manager AI Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-glow: rgba(79, 70, 229, 0.3);
+            --text-color: #f1f5f9;
+            --thought-bg: rgba(245, 158, 11, 0.15);
+            --thought-text: #fbbf24;
+            --action-bg: rgba(59, 130, 246, 0.15);
+            --action-text: #60a5fa;
+            --obs-bg: rgba(16, 185, 129, 0.15);
+            --obs-text: #34d399;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-color);
+            background-image: radial-gradient(circle at top right, rgba(79,70,229,0.15), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(16,185,129,0.1), transparent 40%);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 85vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px var(--border-glow);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .chat-header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            flex: 1;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+        
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.4s forwards ease-out;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-msg .bubble {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            padding: 12px 18px;
+            max-width: 80%;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Box suy nghĩ của Agent */
+        .agent-container {
+            align-self: flex-start;
+            max-width: 85%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .block {
+            font-size: 0.85rem;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-left: 3px solid;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+
+        .type-thought {
+            background: var(--thought-bg);
+            color: var(--thought-text);
+            border-color: var(--thought-text);
+        }
+
+        .type-action {
+            background: var(--action-bg);
+            color: var(--action-text);
+            border-color: var(--action-text);
+        }
+
+        .type-observation {
+            background: var(--obs-bg);
+            color: var(--obs-text);
+            border-color: var(--obs-text);
+        }
+
+        .type-final {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 0 18px 18px 18px;
+            padding: 14px 18px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Markdown Styling */
+        .type-final p { margin: 0 0 10px 0; }
+        .type-final p:last-child { margin-bottom: 0; }
+        .type-final ul, .type-final ol { margin: 8px 0; padding-left: 20px; }
+        .type-final li { margin-bottom: 4px; }
+        .type-final strong { color: #818cf8; }
+        .type-final code { 
+            background: rgba(255,255,255,0.1); 
+            padding: 2px 5px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            font-size: 0.85rem;
+        }
+        .type-final table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.85rem;
+        }
+        .type-final th, .type-final td {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px;
+            text-align: left;
+        }
+        .type-final th { background: rgba(255,255,255,0.05); }
+
+        .chat-input {
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 12px;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            outline: none;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 4px;
+            padding: 12px;
+            align-self: flex-start;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>✨ AI Retail Agent</h1>
+        <div class="user-info">
+            <span id="display-user">...</span>
+            <button class="logout-btn" onclick="logout()">Đăng xuất</button>
+        </div>
+    </div>
+    
+    <div class="chat-messages" id="chat-messages">
+        <div class="message agent-msg">
+            <div class="agent-container">
+                <div class="block type-final">Xin chào! Tôi là AI Retail Agent. Bạn có thể cho tôi biết bạn đang ở cửa hàng nào và cần hỗ trợ gì không? (VD: Mua hàng ở S001)</div>
+            </div>
+        </div>
+    </div>
+
+    <form class="chat-input" id="chat-form">
+        <input type="text" id="userInput" placeholder="Nhập yêu cầu của bạn..." autocomplete="off" required>
+        <button type="submit">Gửi</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('chat-form');
+    const input = document.getElementById('userInput');
+    const messagesEl = document.getElementById('chat-messages');
+    const md = window.markdownit({
+        html: true,
+        linkify: true,
+        typographer: true
+    });
+    let currentUser = null;
+
+    // Check Login
+    function checkLogin() {
+        const userStr = localStorage.getItem('retail_user');
+        if (!userStr) {
+            window.location.href = '/static/login.html';
+            return;
+        }
+        currentUser = JSON.parse(userStr);
+        document.getElementById('display-user').textContent = `${currentUser.customer_name} (${currentUser.store_id})`;
+        
+        // Cập nhật lời chào đầu tiên
+        const welcomeBlock = document.querySelector('.type-final');
+        if (welcomeBlock) {
+            welcomeBlock.textContent = `Xin chào ${currentUser.customer_name}! Tôi là AI Agent hỗ trợ riêng cho cửa hàng ${currentUser.store_id}. Bạn cần tôi giúp gì hôm nay?`;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('retail_user');
+        window.location.href = '/static/login.html';
+    }
+
+    checkLogin();
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        appendMessage('user', text);
+        input.value = '';
+
+        const loadingId = 'loading-' + Date.now();
+        appendLoading(loadingId);
+
+        const payload = { message: text };
+        if (currentUser) {
+            payload.customer_name = currentUser.customer_name;
+            payload.store_id = currentUser.store_id;
+        }
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            
+            // Container cho Agent response
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message agent-msg';
+            const container = document.createElement('div');
+            container.className = 'agent-container';
+            msgDiv.appendChild(container);
+            messagesEl.appendChild(msgDiv);
+            
+            let currentContentBlock = null;
+            let currentContentText = "";
+            let isFirstChunk = true;
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                
+                // Khi bắt đầu nhận stream mới xóa loading
+                if (isFirstChunk) {
+                    const loadingEl = document.getElementById(loadingId);
+                    if (loadingEl) loadingEl.remove();
+                    isFirstChunk = false;
+                }
+                
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+                
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.slice(6).trim();
+                        if (dataStr === '[DONE]') break;
+                        
+                        try {
+                            const data = JSON.parse(dataStr);
+                            
+                            if (data.type === 'content') {
+                                if (!currentContentBlock) {
+                                    currentContentBlock = document.createElement('div');
+                                    currentContentBlock.className = 'block type-final';
+                                    container.appendChild(currentContentBlock);
+                                }
+                                currentContentText += data.delta;
+                                // Dùng innerHTML để render Markdown
+                                currentContentBlock.innerHTML = md.render(currentContentText);
+                            } 
+                            else if (data.type === 'action' || data.type === 'observation') {
+                                // Nếu có action, đoạn text trước đó chính là Thought
+                                if (data.type === 'action' && currentContentBlock && currentContentBlock.className.includes('type-final')) {
+                                    currentContentBlock.className = 'block type-thought';
+                                    currentContentBlock.textContent = "💭 Suy nghĩ: " + currentContentText;
+                                }
+
+                                currentContentBlock = null; 
+                                currentContentText = "";
+
+                                const block = document.createElement('div');
+                                block.className = `block type-${data.type}`;
+                                const prefix = data.type === 'action' ? "⚙️ Hành động: " : "👁️ Kết quả: ";
+                                block.textContent = prefix + data.content;
+                                container.appendChild(block);
+                            }
+                            scrollToBottom();
+                        } catch (e) {
+                            console.error("Error parsing SSE chunk", e);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error(err);
+            const loadingEl = document.getElementById(loadingId);
+            if (loadingEl) loadingEl.remove();
+            appendAgentLogs([{type: 'final', content: "Lỗi kết nối hoặc xử lý luồng dữ liệu."}]);
+        }
+    });
+
+    function appendMessage(sender, text) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}-msg`;
+        if (sender === 'user') {
+            msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
+        }
+        messagesEl.appendChild(msgDiv);
+        scrollToBottom();
+    }
+
+    function appendLoading(id) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message agent-msg`;
+        msgDiv.id = id;
+        msgDiv.innerHTML = `
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        `;
+        messagesEl.appendChild(msgDiv);
+        scrollToBottom();
+    }
+
+    function appendAgentLogs(logs) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message agent-msg';
+        const container = document.createElement('div');
+        container.className = 'agent-container';
+        msgDiv.appendChild(container);
+        messagesEl.appendChild(msgDiv);
+
+        logs.forEach(log => {
+            const block = document.createElement('div');
+            block.className = `block type-${log.type}`;
+            block.textContent = log.content;
+            container.appendChild(block);
+        });
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+</script>
+</body>
+</html>
