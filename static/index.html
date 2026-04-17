@@ -10,26 +10,22 @@
         :root {
             --primary: #4F46E5;
             --primary-hover: #4338CA;
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --border-glow: rgba(79, 70, 229, 0.3);
-            --text-color: #f1f5f9;
-            --thought-bg: rgba(245, 158, 11, 0.15);
-            --thought-text: #fbbf24;
-            --action-bg: rgba(59, 130, 246, 0.15);
-            --action-text: #60a5fa;
-            --obs-bg: rgba(16, 185, 129, 0.15);
-            --obs-text: #34d399;
+            --bg-color: #0d1117;
+            --card-bg: rgba(22, 30, 46, 0.85);
+            --border-glow: rgba(79, 70, 229, 0.25);
+            --text-color: #e2e8f0;
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
             background: var(--bg-color);
-            background-image: radial-gradient(circle at top right, rgba(79,70,229,0.15), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(16,185,129,0.1), transparent 40%);
+            background-image:
+                radial-gradient(ellipse at 10% 0%, rgba(79,70,229,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 100%, rgba(16,185,129,0.08) 0%, transparent 50%);
             color: var(--text-color);
             margin: 0;
-            padding: 0;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -38,32 +34,42 @@
 
         .chat-container {
             width: 100%;
-            max-width: 600px;
-            height: 85vh;
+            max-width: 760px;
+            height: 90vh;
             background: var(--card-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px var(--border-glow);
+            box-shadow: 0 32px 64px -12px rgba(0,0,0,0.6), 0 0 60px var(--border-glow);
             overflow: hidden;
         }
 
+        /* ── Header ── */
         .chat-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
             display: flex;
             align-items: center;
-            background: rgba(15, 23, 42, 0.4);
+            background: rgba(10,15,28,0.5);
+            gap: 12px;
+        }
+
+        .header-avatar {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, #4F46E5, #7c3aed);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; flex-shrink: 0;
         }
 
         .chat-header h1 {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: 1.05rem;
             font-weight: 600;
-            background: linear-gradient(to right, #818cf8, #a78bfa);
+            background: linear-gradient(to right, #a5b4fc, #c4b5fd);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             flex: 1;
@@ -72,230 +78,310 @@
         .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 0.85rem;
-            color: #94a3b8;
+            gap: 10px;
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+
+        .store-badge {
+            background: rgba(79,70,229,0.15);
+            color: #818cf8;
+            border: 1px solid rgba(79,70,229,0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
         }
 
         .logout-btn {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            padding: 6px 12px;
+            background: transparent;
+            color: #64748b;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 5px 10px;
             border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
         }
+        .logout-btn:hover { color: #ef4444; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.08); transform: none; }
 
-        .logout-btn:hover {
-            background: #ef4444;
-            color: white;
-        }
-
+        /* ── Messages ── */
         .chat-messages {
             flex: 1;
-            padding: 24px;
+            padding: 20px 24px;
             overflow-y: auto;
             scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
 
         .message {
-            margin-bottom: 16px;
             display: flex;
             flex-direction: column;
             opacity: 0;
-            transform: translateY(10px);
-            animation: fadeIn 0.4s forwards ease-out;
+            transform: translateY(8px);
+            animation: fadeIn 0.3s forwards ease-out;
         }
 
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
+        /* User bubble */
+        .user-msg {
+            align-items: flex-end;
+        }
         .user-msg .bubble {
-            align-self: flex-end;
-            background: var(--primary);
+            background: linear-gradient(135deg, #4F46E5, #6d28d9);
             color: white;
-            border-radius: 18px 18px 0 18px;
-            padding: 12px 18px;
-            max-width: 80%;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            border-radius: 16px 16px 2px 16px;
+            padding: 10px 16px;
+            max-width: 72%;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.3);
         }
 
-        /* Box suy nghĩ của Agent */
+        /* Agent container */
+        .agent-msg { align-items: flex-start; }
+
         .agent-container {
-            align-self: flex-start;
-            max-width: 85%;
+            max-width: 88%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .block {
-            font-size: 0.85rem;
-            padding: 10px 14px;
+        /* Tool steps */
+        .steps-panel {
+            border: 1px solid rgba(255,255,255,0.07);
             border-radius: 12px;
-            border-left: 3px solid;
-            font-family: monospace;
+            overflow: hidden;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .steps-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.78rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .steps-toggle:hover { background: rgba(255,255,255,0.04); }
+        .steps-panel.open .steps-toggle-icon { transform: rotate(90deg); }
+        .steps-toggle-icon { display: inline-block; transition: transform 0.2s; font-style: normal; }
+
+        .steps-body {
+            display: none;
+            padding: 8px 12px 12px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            flex-direction: column;
+            gap: 6px;
+        }
+        .steps-panel.open .steps-body {
+            display: flex;
+        }
+
+        .step-item {
+            font-size: 0.78rem;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border-left: 2px solid;
             line-height: 1.5;
+            font-family: 'Inter', monospace;
+        }
+        .step-action {
+            background: rgba(59,130,246,0.08);
+            color: #60a5fa;
+            border-color: #3b82f6;
+        }
+        .step-observation {
+            background: rgba(16,185,129,0.08);
+            color: #34d399;
+            border-color: #10b981;
+        }
+        .step-thought {
+            background: rgba(245,158,11,0.06);
+            color: #fbbf24;
+            border-color: #f59e0b;
+            white-space: pre-wrap;
         }
 
-        .type-thought {
-            background: var(--thought-bg);
-            color: var(--thought-text);
-            border-color: var(--thought-text);
+        /* ── Final answer ── */
+        .answer-bubble {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.09);
+            color: #e2e8f0;
+            border-radius: 2px 16px 16px 16px;
+            padding: 16px 18px;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            position: relative;
         }
 
-        .type-action {
-            background: var(--action-bg);
-            color: var(--action-text);
-            border-color: var(--action-text);
+        .answer-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #4F46E5;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .answer-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(79,70,229,0.2);
         }
 
-        .type-observation {
-            background: var(--obs-bg);
-            color: var(--obs-text);
-            border-color: var(--obs-text);
+        /* Markdown inside answer */
+        .answer-bubble p { margin: 0 0 8px 0; }
+        .answer-bubble p:last-child { margin-bottom: 0; }
+        .answer-bubble ul, .answer-bubble ol { margin: 6px 0; padding-left: 20px; }
+        .answer-bubble li { margin-bottom: 4px; }
+        .answer-bubble strong { color: #a5b4fc; }
+        .answer-bubble em { color: #94a3b8; }
+        .answer-bubble h1, .answer-bubble h2, .answer-bubble h3 {
+            color: #c4b5fd;
+            margin: 12px 0 6px;
+            font-weight: 600;
         }
-
-        .type-final {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 0 18px 18px 18px;
-            padding: 14px 18px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            line-height: 1.6;
+        .answer-bubble h1 { font-size: 1.05rem; border-bottom: 1px solid rgba(196,181,253,0.2); padding-bottom: 4px; }
+        .answer-bubble h2 { font-size: 0.97rem; }
+        .answer-bubble h3 { font-size: 0.9rem; }
+        .answer-bubble hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 10px 0; }
+        .answer-bubble code {
+            background: rgba(255,255,255,0.08);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 0.82rem;
+            font-family: monospace;
         }
-
-        /* Markdown Styling */
-        .type-final p { margin: 0 0 10px 0; }
-        .type-final p:last-child { margin-bottom: 0; }
-        .type-final ul, .type-final ol { margin: 8px 0; padding-left: 20px; }
-        .type-final li { margin-bottom: 4px; }
-        .type-final strong { color: #818cf8; }
-        .type-final code { 
-            background: rgba(255,255,255,0.1); 
-            padding: 2px 5px; 
-            border-radius: 4px; 
-            font-family: monospace; 
-            font-size: 0.85rem;
-        }
-        .type-final table {
+        .answer-bubble table {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 0.85rem;
+            margin: 12px 0;
+            font-size: 0.82rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.4);
         }
-        .type-final th, .type-final td {
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 8px;
+        .answer-bubble thead tr { background: linear-gradient(135deg, #4F46E5, #7c3aed); }
+        .answer-bubble th {
+            color: #fff;
+            padding: 10px 13px;
             text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.02em;
         }
-        .type-final th { background: rgba(255,255,255,0.05); }
+        .answer-bubble td {
+            padding: 8px 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            color: #cbd5e1;
+        }
+        .answer-bubble tbody tr:nth-child(odd)  { background: rgba(255,255,255,0.03); }
+        .answer-bubble tbody tr:nth-child(even) { background: rgba(255,255,255,0.015); }
+        .answer-bubble tbody tr:hover { background: rgba(79,70,229,0.12); transition: background 0.15s; }
+        .answer-bubble tbody tr:last-child td { border-bottom: none; }
 
+        /* ── Input area ── */
         .chat-input {
-            padding: 20px;
-            background: rgba(15, 23, 42, 0.4);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px;
+            background: rgba(10,15,28,0.5);
+            border-top: 1px solid rgba(255,255,255,0.07);
             display: flex;
-            gap: 12px;
+            gap: 10px;
+            align-items: center;
         }
 
         input {
             flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
             color: white;
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-radius: 12px;
             outline: none;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
         }
-
+        input::placeholder { color: #475569; }
         input:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(79,70,229,0.5);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.12);
         }
 
-        button {
-            background: var(--primary);
+        button[type="submit"] {
+            background: linear-gradient(135deg, #4F46E5, #6d28d9);
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 0 24px;
-            font-weight: 600;
+            width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+            flex-shrink: 0;
         }
+        button[type="submit"]:hover { transform: scale(1.05); box-shadow: 0 6px 16px rgba(79,70,229,0.4); }
 
-        button:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
-        }
-
+        /* ── Loading dots ── */
         .loading-dots {
             display: flex;
-            gap: 4px;
-            padding: 12px;
-            align-self: flex-start;
+            gap: 5px;
+            padding: 12px 4px;
+            align-items: center;
         }
-
         .dot {
-            width: 8px;
-            height: 8px;
-            background: #cbd5e1;
+            width: 7px; height: 7px;
+            background: #475569;
             border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
+            animation: bounce 1.2s infinite ease-in-out both;
         }
-
         .dot:nth-child(1) { animation-delay: -0.32s; }
         .dot:nth-child(2) { animation-delay: -0.16s; }
 
         @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
         }
-
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="chat-header">
-        <h1>✨ AI Retail Agent</h1>
+        <div class="header-avatar">🤖</div>
+        <h1>AI Retail Agent</h1>
         <div class="user-info">
+            <span class="store-badge" id="display-store"></span>
             <span id="display-user">...</span>
             <button class="logout-btn" onclick="logout()">Đăng xuất</button>
         </div>
     </div>
-    
+
     <div class="chat-messages" id="chat-messages">
         <div class="message agent-msg">
             <div class="agent-container">
-                <div class="block type-final">Xin chào! Tôi là AI Retail Agent. Bạn có thể cho tôi biết bạn đang ở cửa hàng nào và cần hỗ trợ gì không? (VD: Mua hàng ở S001)</div>
+                <div class="answer-bubble" id="welcome-msg">Xin chào! Tôi là AI Retail Agent. Bạn cần hỗ trợ gì hôm nay?</div>
             </div>
         </div>
     </div>
 
     <form class="chat-input" id="chat-form">
         <input type="text" id="userInput" placeholder="Nhập yêu cầu của bạn..." autocomplete="off" required>
-        <button type="submit">Gửi</button>
+        <button type="submit">➤</button>
     </form>
 </div>
 
@@ -306,25 +392,38 @@
     const md = window.markdownit({
         html: true,
         linkify: true,
-        typographer: true
+        typographer: true,
+        breaks: true
     });
+
+    // Normalize AI output so markdown headings/tables render correctly
+    function normalizeMarkdown(text) {
+        // Ensure headings start on a new line
+        text = text.replace(/([^\n])(#{1,3} )/g, '$1\n$2');
+        // Split consecutive table rows that the model merges as || (no newline between rows)
+        text = text.replace(/\|\|/g, '|\n|');
+        // Fix table separator rows: replace em/en-dashes with hyphens.
+        // A separator row contains only |, :, -, —, –, space, tab characters.
+        text = text.replace(/^(\|[^|\n]*)+\|$/gm, (row) => {
+            if (/^[\|:\s\u002D\u2014\u2013\u2012\u2010]+$/.test(row)) {
+                return row.replace(/[\u2014\u2013\u2012\u2010]+/g, '---');
+            }
+            return row;
+        });
+        // Collapse 3+ blank lines to 2
+        text = text.replace(/\n{3,}/g, '\n\n');
+        return text;
+    }
     let currentUser = null;
 
-    // Check Login
     function checkLogin() {
         const userStr = localStorage.getItem('retail_user');
-        if (!userStr) {
-            window.location.href = '/static/login.html';
-            return;
-        }
+        if (!userStr) { window.location.href = '/static/login.html'; return; }
         currentUser = JSON.parse(userStr);
-        document.getElementById('display-user').textContent = `${currentUser.customer_name} (${currentUser.store_id})`;
-        
-        // Cập nhật lời chào đầu tiên
-        const welcomeBlock = document.querySelector('.type-final');
-        if (welcomeBlock) {
-            welcomeBlock.textContent = `Xin chào ${currentUser.customer_name}! Tôi là AI Agent hỗ trợ riêng cho cửa hàng ${currentUser.store_id}. Bạn cần tôi giúp gì hôm nay?`;
-        }
+        document.getElementById('display-user').textContent = currentUser.customer_name;
+        document.getElementById('display-store').textContent = currentUser.store_id;
+        const welcome = document.getElementById('welcome-msg');
+        if (welcome) welcome.textContent = `Xin chào ${currentUser.customer_name}! Tôi là AI Agent hỗ trợ cửa hàng ${currentUser.store_id}. Bạn cần tôi giúp gì hôm nay?`;
     }
 
     function logout() {
@@ -339,7 +438,7 @@
         const text = input.value.trim();
         if (!text) return;
 
-        appendMessage('user', text);
+        appendUserMsg(text);
         input.value = '';
 
         const loadingId = 'loading-' + Date.now();
@@ -357,76 +456,135 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            if (!response.ok) throw new Error('Network error');
 
-            if (!response.ok) throw new Error('Network response was not ok');
-            
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-            
-            // Container cho Agent response
+
+            // Build agent message structure
             const msgDiv = document.createElement('div');
             msgDiv.className = 'message agent-msg';
             const container = document.createElement('div');
             container.className = 'agent-container';
             msgDiv.appendChild(container);
             messagesEl.appendChild(msgDiv);
-            
-            let currentContentBlock = null;
-            let currentContentText = "";
+
+            // Steps panel (collapsible) — created lazily
+            let stepsPanel = null;
+            let stepsBody = null;
+
+            // Final answer bubble — created lazily
+            let answerBubble = null;
+            let answerText = "";
+            // Buffer content until we know if it's pre-tool reasoning or the final answer
+            let contentBuffer = "";
+            let hasSeenAction = false;
+
             let isFirstChunk = true;
+
+            function ensureStepsPanel() {
+                if (stepsPanel) return;
+                stepsPanel = document.createElement('div');
+                stepsPanel.className = 'steps-panel';
+                const toggle = document.createElement('div');
+                toggle.className = 'steps-toggle';
+                toggle.innerHTML = `<i class="steps-toggle-icon">▶</i> ⚙️ Các bước thực hiện`;
+                toggle.addEventListener('click', () => stepsPanel.classList.toggle('open'));
+                stepsBody = document.createElement('div');
+                stepsBody.className = 'steps-body';
+                stepsPanel.appendChild(toggle);
+                stepsPanel.appendChild(stepsBody);
+                container.appendChild(stepsPanel);
+            }
+
+            function ensureAnswerBubble() {
+                if (answerBubble) return;
+                const label = document.createElement('div');
+                label.className = 'answer-label';
+                label.textContent = 'Trả lời';
+                answerBubble = document.createElement('div');
+                answerBubble.className = 'answer-bubble';
+                answerBubble.appendChild(label);
+                const content = document.createElement('div');
+                content.className = 'answer-content';
+                answerBubble.appendChild(content);
+                container.appendChild(answerBubble);
+            }
 
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) break;
-                
-                // Khi bắt đầu nhận stream mới xóa loading
+
                 if (isFirstChunk) {
                     const loadingEl = document.getElementById(loadingId);
                     if (loadingEl) loadingEl.remove();
                     isFirstChunk = false;
                 }
-                
+
                 const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n');
-                
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const dataStr = line.slice(6).trim();
-                        if (dataStr === '[DONE]') break;
-                        
-                        try {
-                            const data = JSON.parse(dataStr);
-                            
-                            if (data.type === 'content') {
-                                if (!currentContentBlock) {
-                                    currentContentBlock = document.createElement('div');
-                                    currentContentBlock.className = 'block type-final';
-                                    container.appendChild(currentContentBlock);
-                                }
-                                currentContentText += data.delta;
-                                // Dùng innerHTML để render Markdown
-                                currentContentBlock.innerHTML = md.render(currentContentText);
-                            } 
-                            else if (data.type === 'action' || data.type === 'observation') {
-                                // Nếu có action, đoạn text trước đó chính là Thought
-                                if (data.type === 'action' && currentContentBlock && currentContentBlock.className.includes('type-final')) {
-                                    currentContentBlock.className = 'block type-thought';
-                                    currentContentBlock.textContent = "💭 Suy nghĩ: " + currentContentText;
-                                }
-
-                                currentContentBlock = null; 
-                                currentContentText = "";
-
-                                const block = document.createElement('div');
-                                block.className = `block type-${data.type}`;
-                                const prefix = data.type === 'action' ? "⚙️ Hành động: " : "👁️ Kết quả: ";
-                                block.textContent = prefix + data.content;
-                                container.appendChild(block);
-                            }
-                            scrollToBottom();
-                        } catch (e) {
-                            console.error("Error parsing SSE chunk", e);
+                for (const line of chunk.split('\n')) {
+                    if (!line.startsWith('data: ')) continue;
+                    const dataStr = line.slice(6).trim();
+                    if (dataStr === '[DONE]') {
+                        // Flush buffered content to answer bubble (no tool calls followed)
+                        if (contentBuffer) {
+                            if (stepsPanel) stepsPanel.classList.remove('open');
+                            ensureAnswerBubble();
+                            answerText += contentBuffer;
+                            contentBuffer = "";
+                            answerBubble.querySelector('.answer-content').innerHTML = md.render(normalizeMarkdown(answerText));
                         }
+                        break;
+                    }
+                    try {
+                        const data = JSON.parse(dataStr);
+
+                        if (data.type === 'thought') {
+                            ensureStepsPanel();
+                            const thoughtItem = document.createElement('div');
+                            thoughtItem.className = 'step-item step-thought';
+                            thoughtItem.textContent = '💭 ' + data.content;
+                            stepsBody.appendChild(thoughtItem);
+                            stepsPanel.classList.add('open');
+
+                        } else if (data.type === 'action' || data.type === 'observation') {
+                            hasSeenAction = true;
+                            // Flush any buffered content into steps panel as reasoning
+                            if (contentBuffer.trim()) {
+                                ensureStepsPanel();
+                                const reasonItem = document.createElement('div');
+                                reasonItem.className = 'step-item step-thought';
+                                reasonItem.textContent = '💭 ' + contentBuffer.trim();
+                                stepsBody.appendChild(reasonItem);
+                                contentBuffer = "";
+                            }
+                            ensureStepsPanel();
+                            const item = document.createElement('div');
+                            item.className = `step-item step-${data.type === 'action' ? 'action' : 'observation'}`;
+                            item.textContent = (data.type === 'action' ? '⚙️ ' : '👁️ ') + data.content;
+                            stepsBody.appendChild(item);
+                            stepsPanel.classList.add('open');
+
+                        } else if (data.type === 'content') {
+                            if (!hasSeenAction && !answerBubble) {
+                                // Buffer content — we don't know yet if tool calls will follow
+                                contentBuffer += data.delta;
+                            } else {
+                                // We're in the final answer phase
+                                if (contentBuffer) {
+                                    answerText += contentBuffer;
+                                    contentBuffer = "";
+                                }
+                                if (stepsPanel) stepsPanel.classList.remove('open');
+                                ensureAnswerBubble();
+                                answerText += data.delta;
+                                answerBubble.querySelector('.answer-content').innerHTML = md.render(normalizeMarkdown(answerText));
+                            }
+                        }
+
+                        scrollToBottom();
+                    } catch (err) {
+                        console.error('SSE parse error', err);
                     }
                 }
             }
@@ -434,49 +592,34 @@
             console.error(err);
             const loadingEl = document.getElementById(loadingId);
             if (loadingEl) loadingEl.remove();
-            appendAgentLogs([{type: 'final', content: "Lỗi kết nối hoặc xử lý luồng dữ liệu."}]);
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'message agent-msg';
+            const b = document.createElement('div');
+            b.className = 'answer-bubble';
+            b.textContent = 'Lỗi kết nối hoặc xử lý dữ liệu.';
+            msgDiv.appendChild(b);
+            messagesEl.appendChild(msgDiv);
+            scrollToBottom();
         }
     });
 
-    function appendMessage(sender, text) {
+    function appendUserMsg(text) {
         const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${sender}-msg`;
-        if (sender === 'user') {
-            msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
-        }
+        msgDiv.className = 'message user-msg';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        msgDiv.appendChild(bubble);
         messagesEl.appendChild(msgDiv);
         scrollToBottom();
     }
 
     function appendLoading(id) {
         const msgDiv = document.createElement('div');
-        msgDiv.className = `message agent-msg`;
-        msgDiv.id = id;
-        msgDiv.innerHTML = `
-            <div class="loading-dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-        `;
-        messagesEl.appendChild(msgDiv);
-        scrollToBottom();
-    }
-
-    function appendAgentLogs(logs) {
-        const msgDiv = document.createElement('div');
         msgDiv.className = 'message agent-msg';
-        const container = document.createElement('div');
-        container.className = 'agent-container';
-        msgDiv.appendChild(container);
+        msgDiv.id = id;
+        msgDiv.innerHTML = `<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
         messagesEl.appendChild(msgDiv);
-
-        logs.forEach(log => {
-            const block = document.createElement('div');
-            block.className = `block type-${log.type}`;
-            block.textContent = log.content;
-            container.appendChild(block);
-        });
         scrollToBottom();
     }
 

@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail AI Agent & Stock Prediction — Presentation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:      #0f2744;
+    --navy-mid:  #1e3a5f;
+    --navy-light:#2a4f82;
+    --accent:    #2d7dd2;
+    --accent2:   #38b6ff;
+    --gold:      #f5a623;
+    --white:     #ffffff;
+    --gray-100:  #f4f7fc;
+    --gray-200:  #e2eaf5;
+    --gray-400:  #8fa3be;
+    --gray-600:  #4a6080;
+    --text:      #1a2940;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    font-family: 'Inter', sans-serif;
+    background: #07192e;
+    overflow: hidden;
+  }
+
+  /* ── SLIDESHOW WRAPPER ── */
+  .deck {
+    width: 100vw; height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity .55s ease;
+  }
+  .slide.active {
+    opacity: 1; pointer-events: all;
+  }
+
+  /* ── NAVIGATION ── */
+  .nav {
+    position: fixed; bottom: 32px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; align-items: center; gap: 16px;
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 50px;
+    padding: 10px 24px;
+    z-index: 100;
+  }
+  .nav button {
+    background: none; border: none; cursor: pointer;
+    color: var(--white); font-size: 18px; line-height: 1;
+    padding: 4px 10px; border-radius: 8px;
+    transition: background .2s;
+  }
+  .nav button:hover { background: rgba(255,255,255,.15); }
+  .nav button:disabled { opacity: .3; cursor: default; }
+  .nav-counter {
+    color: rgba(255,255,255,.7); font-size: 13px;
+    font-weight: 500; min-width: 52px; text-align: center;
+  }
+  .dots {
+    display: flex; gap: 7px; align-items: center;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,.3);
+    cursor: pointer; transition: all .25s;
+  }
+  .dot.active { background: var(--accent2); width: 22px; border-radius: 4px; }
+
+  /* keyboard hint */
+  .kbd-hint {
+    position: fixed; bottom: 32px; right: 36px;
+    color: rgba(255,255,255,.3); font-size: 11px;
+    z-index: 100;
+  }
+
+  /* ══════════════════════════════════════════
+     SLIDE 1 — COVER
+  ══════════════════════════════════════════ */
+  .s1 {
+    background: linear-gradient(135deg, #071a30 0%, #0f2744 55%, #1a3d6e 100%);
+    justify-content: center; align-items: center;
+  }
+  .s1-inner { text-align: center; max-width: 820px; padding: 0 40px; }
+  .s1-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(45,125,210,.25);
+    border: 1px solid rgba(56,182,255,.4);
+    color: var(--accent2); font-size: 12px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 6px 18px; border-radius: 50px; margin-bottom: 28px;
+  }
+  .s1-badge span { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); }
+  .s1 h1 {
+    font-size: clamp(32px, 5vw, 58px); font-weight: 800;
+    color: var(--white); line-height: 1.1; margin-bottom: 16px;
+  }
+  .s1 h1 em { color: var(--accent2); font-style: normal; }
+  .s1-sub {
+    font-size: clamp(14px, 2vw, 18px); color: var(--gray-400);
+    line-height: 1.6; max-width: 600px; margin: 0 auto 40px;
+  }
+  .s1-pills { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .pill {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.75); font-size: 13px;
+    padding: 7px 18px; border-radius: 50px;
+  }
+  .s1-deco {
+    position: absolute; width: 520px; height: 520px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,125,210,.18) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    pointer-events: none;
+  }
+
+  /* ══════════════════════════════════════════
+     SHARED LAYOUT HELPERS
+  ══════════════════════════════════════════ */
+  .slide-header {
+    padding: 48px 64px 0;
+    flex-shrink: 0;
+  }
+  .slide-tag {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--accent2);
+    margin-bottom: 8px;
+  }
+  .slide-title {
+    font-size: clamp(22px, 3vw, 38px); font-weight: 800;
+    color: var(--white); line-height: 1.15;
+  }
+  .slide-title span { color: var(--accent2); }
+  .slide-body {
+    flex: 1; padding: 32px 64px 96px;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+  }
+  .dark-bg  { background: linear-gradient(160deg, #071a30 0%, #0d2342 100%); }
+  .light-bg { background: linear-gradient(160deg, #0d2342 0%, #0f2e58 100%); }
+
+  /* ══════════════════════════════════════════
+     SLIDE 2 — PROBLEM
+  ══════════════════════════════════════════ */
+  .problem-grid {
+    display: grid; grid-template-columns: repeat(2,1fr); gap: 20px;
+    margin-top: 8px;
+  }
+  .problem-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 16px; padding: 24px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .problem-icon {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .problem-card h3 { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .problem-card p  { font-size: 13px; color: var(--gray-400); line-height: 1.55; }
+  .stat-row {
+    display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+  }
+  .stat-box {
+    flex: 1; min-width: 120px;
+    background: rgba(45,125,210,.15);
+    border: 1px solid rgba(45,125,210,.35);
+    border-radius: 14px; padding: 18px 20px; text-align: center;
+  }
+  .stat-box .num { font-size: 32px; font-weight: 800; color: var(--accent2); }
+  .stat-box .lbl { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
+
+  /* ══════════════════════════════════════════
+     SLIDE 3 — SOLUTION OVERVIEW
+  ══════════════════════════════════════════ */
+  .flow {
+    display: flex; align-items: center; gap: 0;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 20px; padding: 28px 24px;
+    margin-bottom: 28px; flex-wrap: wrap; gap: 4px;
+  }
+  .flow-node {
+    flex: 1; min-width: 100px; text-align: center;
+  }
+  .flow-node .fn-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; margin: 0 auto 10px;
+  }
+  .flow-node .fn-label { font-size: 13px; font-weight: 600; color: var(--white); }
+  .flow-node .fn-sub   { font-size: 11px; color: var(--gray-400); margin-top: 3px; }
+  .flow-arrow {
+    color: var(--accent2); font-size: 22px; padding: 0 6px; flex-shrink: 0;
+  }
+  .highlight-pills {
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .hl-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(45,125,210,.12);
+    border: 1px solid rgba(45,125,210,.3);
+    color: var(--white); font-size: 13px; font-weight: 500;
+    padding: 10px 18px; border-radius: 50px;
+  }
+  .hl-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); }
+
+  /* ══════════════════════════════════════════
+     SLIDE 4 — FEATURES
+  ══════════════════════════════════════════ */
+  .feat-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+  }
+  .feat-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 18px; padding: 28px 24px;
+    position: relative; overflow: hidden;
+  }
+  .feat-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(45,125,210,.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .feat-num {
+    font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    color: var(--accent2); margin-bottom: 14px;
+  }
+  .feat-icon-wrap {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(45,125,210,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin-bottom: 16px;
+  }
+  .feat-card h3 { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+  .feat-card p  { font-size: 13px; color: var(--gray-400); line-height: 1.6; }
+  .feat-tag {
+    display: inline-block; margin-top: 12px;
+    background: rgba(56,182,255,.15);
+    border: 1px solid rgba(56,182,255,.3);
+    color: var(--accent2); font-size: 11px; font-weight: 600;
+    padding: 4px 12px; border-radius: 50px;
+  }
+
+  /* ══════════════════════════════════════════
+     SLIDE 5 — BUSINESS VALUE
+  ══════════════════════════════════════════ */
+  .value-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+    margin-bottom: 24px;
+  }
+  .value-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 18px; padding: 26px 22px;
+    text-align: center;
+  }
+  .value-card .vi { font-size: 32px; margin-bottom: 12px; }
+  .value-card .vn {
+    font-size: 36px; font-weight: 800; color: var(--accent2); margin-bottom: 6px;
+  }
+  .value-card .vt { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+  .value-card .vd { font-size: 12px; color: var(--gray-400); line-height: 1.5; }
+  .ceo-box {
+    background: linear-gradient(135deg, rgba(245,166,35,.12) 0%, rgba(245,166,35,.04) 100%);
+    border: 1px solid rgba(245,166,35,.35);
+    border-radius: 16px; padding: 20px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .ceo-box .star { font-size: 28px; }
+  .ceo-box p { font-size: 14px; color: rgba(255,255,255,.85); line-height: 1.55; }
+  .ceo-box strong { color: var(--gold); }
+
+  /* ══════════════════════════════════════════
+     SLIDE 6 — ARCHITECTURE
+  ══════════════════════════════════════════ */
+  .arch-container {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    align-items: start;
+  }
+  .arch-pipeline {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 18px; padding: 24px;
+  }
+  .arch-pipeline h4 {
+    font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--accent2); margin-bottom: 16px;
+  }
+  .pipe-step {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .pipe-step:last-child { margin-bottom: 0; }
+  .ps-icon {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    background: rgba(45,125,210,.2);
+  }
+  .ps-info { flex: 1; }
+  .ps-info .ps-title { font-size: 13px; font-weight: 600; color: var(--white); }
+  .ps-info .ps-sub   { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
+  .ps-arrow { color: var(--accent2); font-size: 14px; flex-shrink: 0; }
+  .arch-tags { display: flex; flex-direction: column; gap: 12px; }
+  .arch-tag-row {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .arch-tag-row .ati { font-size: 24px; }
+  .arch-tag-row .atl { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 2px; }
+  .arch-tag-row .ats { font-size: 12px; color: var(--gray-400); }
+
+  /* ══════════════════════════════════════════
+     SLIDE 7 — HOW IT WORKS
+  ══════════════════════════════════════════ */
+  .steps-row {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+  }
+  .step-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 18px; padding: 24px 20px;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  .step-number {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: var(--accent2); margin-bottom: 14px;
+  }
+  .step-icon { font-size: 30px; margin-bottom: 12px; }
+  .step-card h3 { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+  .step-card p  { font-size: 12.5px; color: var(--gray-400); line-height: 1.6; flex: 1; }
+  .step-cmd {
+    margin-top: 12px;
+    background: rgba(0,0,0,.3);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px; padding: 8px 12px;
+    font-size: 11px; font-family: 'Courier New', monospace;
+    color: var(--accent2);
+  }
+  .step-connector {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+  }
+  .connector-line {
+    flex: 1; height: 1px; background: linear-gradient(to right, transparent, rgba(45,125,210,.5), transparent);
+  }
+
+  /* ══════════════════════════════════════════
+     SLIDE 8 — PHASE 2 & SAAS
+  ══════════════════════════════════════════ */
+  .phase2-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  }
+  .phase-col h4 {
+    font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 14px;
+  }
+  .phase-col h4.col-accent { color: var(--accent2); }
+  .phase-col h4.col-gold   { color: var(--gold); }
+  .phase-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 14px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  .phase-item .pi-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .phase-item .pi-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+  .phase-item .pi-desc  { font-size: 12px; color: var(--gray-400); line-height: 1.5; }
+  .saas-badge {
+    background: linear-gradient(135deg, rgba(245,166,35,.15) 0%, rgba(45,125,210,.1) 100%);
+    border: 1px solid rgba(245,166,35,.3);
+    border-radius: 16px; padding: 16px 20px; margin-top: 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .saas-badge .sbi { font-size: 26px; }
+  .saas-badge p { font-size: 13px; color: rgba(255,255,255,.8); line-height: 1.55; }
+  .saas-badge strong { color: var(--gold); }
+
+  /* ══════════════════════════════════════════
+     SLIDE 9 — CLOSING
+  ══════════════════════════════════════════ */
+  .s9 {
+    background: linear-gradient(135deg, #071a30 0%, #0f2744 55%, #1a3d6e 100%);
+    justify-content: center; align-items: center;
+  }
+  .s9-inner { text-align: center; max-width: 760px; padding: 0 40px; }
+  .s9 h2 {
+    font-size: clamp(24px, 4vw, 46px); font-weight: 800;
+    color: var(--white); line-height: 1.1; margin-bottom: 14px;
+  }
+  .s9 h2 em { color: var(--accent2); font-style: normal; }
+  .s9-sub {
+    font-size: 16px; color: var(--gray-400); margin-bottom: 36px; line-height: 1.6;
+  }
+  .s9-cards {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px;
+  }
+  .s9-card {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px; padding: 18px 22px; min-width: 160px;
+    text-align: left;
+  }
+  .s9-card .sci { font-size: 24px; margin-bottom: 8px; }
+  .s9-card .sct { font-size: 13px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+  .s9-card .scd { font-size: 12px; color: var(--gray-400); }
+  .s9-cta {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent) 0%, #1a5fa8 100%);
+    color: var(--white); font-size: 15px; font-weight: 700;
+    padding: 14px 40px; border-radius: 50px;
+    border: none; cursor: pointer;
+    box-shadow: 0 8px 28px rgba(45,125,210,.4);
+  }
+  .s9-deco {
+    position: absolute; width: 520px; height: 520px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(45,125,210,.15) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 1 — COVER
+  ═══════════════════════════════════════ -->
+  <div class="slide s1 active" data-slide="1">
+    <div class="s1-deco"></div>
+    <div class="s1-inner">
+      <div class="s1-badge"><span></span>Internal Demo — 2026</div>.
+      <h1>Data-Driven <em>AI Agent</em><br>Trợ lý tối ưu đặt hàng cho Retailer App 🚀</h1>
+      <p class="s1-sub">
+        Hệ thống phân tích hàng tồn kho thông minh kết hợp AI Assistant,<br>
+      </p>
+      <div class="s1-pills">
+        <span class="pill">🤖 AI Retail Agent</span>
+        <span class="pill">📊 T-Cycle Analysis</span>
+        <span class="pill">🛒 Market Basket Analysis</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 2 — PROBLEM
+  ═══════════════════════════════════════ -->
+  <div class="slide dark-bg" data-slide="2">
+    <div class="slide-header">
+      <div class="slide-tag">Bối cảnh &amp; Vấn đề</div>
+      <div class="slide-title">Chủ cửa hàng &amp; Retailer<br><span>đang đối mặt mỗi ngày</span></div>
+    </div>
+    <div class="slide-body">
+      <div class="problem-grid">
+        <div class="problem-card">
+          <div class="problem-icon" style="background:rgba(220,53,69,.2)">❌</div>
+          <div>
+            <h3>Hết hàng — mất khách ngay lập tức</h3>
+            <p>Chủ cửa hàng không biết khi nào cần nhập thêm, để hàng hết giá kệ trống, khách chuyển sang đối thủ.</p>
+          </div>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon" style="background:rgba(255,193,7,.2)">📋</div>
+          <div>
+            <h3>Gọi đơn theo thói quen, không có dữ liệu</h3>
+            <p>Retailer đặt hàng dựa vào kinh nghiệm cảm tính, không có căn cứ từ lịch sử bán thực tế của cửa hàng mình.</p>
+          </div>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon" style="background:rgba(45,125,210,.2)">📦</div>
+          <div>
+            <h3>Ôm hàng ế, vốn bị chôn</h3>
+            <p>Nhập quá nhiều hàng chậm, chiếm diện tích &amp; vốn lưu động, trong khi hàng chạy lại thiếu để bán.</p>
+          </div>
+        </div>
+        <div class="problem-card">
+          <div class="problem-icon" style="background:rgba(111,66,193,.2)">🔗</div>
+          <div>
+            <h3>Không biết bán thêm gì cho khách</h3>
+            <p>Bỏ lỡ cơ hội tăng giá trị đơn hàng vì không nắm được sản phẩm nào thường được mua cùng nhau.</p>
+          </div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">30%</div><div class="lbl">Doanh thu mất vì cửa hàng hết hàng*</div></div>
+        <div class="stat-box"><div class="num">40%</div><div class="lbl">Thời gian chủ cửa hàng dùng để kiểm kho thủ công*</div></div>
+        <div class="stat-box"><div class="num">2x</div><div class="lbl">Vốn bị chôn do nhập hàng sai nhu cầu*</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 3 — SOLUTION
+  ═══════════════════════════════════════ -->
+  <div class="slide light-bg" data-slide="3">
+    <div class="slide-header">
+      <div class="slide-tag">Giải pháp — Retailer App</div>
+      <div class="slide-title">Trợ lý AI đặt hàng <span>dành riêng cho Retailer</span></div>
+    </div>
+    <div class="slide-body">
+      <div class="flow">
+        <div class="flow-node">
+          <div class="fn-icon" style="background:rgba(45,125,210,.2)">🏪</div>
+          <div class="fn-label">Retailer mở App</div>
+          <div class="fn-sub">Đăng nhập, chọn cửa hàng</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="fn-icon" style="background:rgba(111,66,193,.2)">🧠</div>
+          <div class="fn-label">AI phân tích tự động</div>
+          <div class="fn-sub">Lịch sử đặt hàng &amp; hành vi mua</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="fn-icon" style="background:rgba(56,182,255,.2)">💡</div>
+          <div class="fn-label">Nhận gợi ý thông minh</div>
+          <div class="fn-sub">Nhập hàng đúng lúc &amp; bán kèm</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="fn-icon" style="background:rgba(40,167,69,.2)">✅</div>
+          <div class="fn-label">Xác nhận đơn hàng</div>
+          <div class="fn-sub">Nhanh — Đúng — Không bỏ sót</div>
+        </div>
+      </div>
+      <div class="highlight-pills">
+        <div class="hl-pill"><span class="dot"></span>Giao diện chat tự nhiên — không cần training</div>
+        <div class="hl-pill"><span class="dot"></span>Cá nhân hóa theo từng cửa hàng &amp; từng retailer</div>
+        <div class="hl-pill"><span class="dot"></span>Gợi ý nhập hàng &amp; upsell dựa trên dữ liệu thực</div>
+        <div class="hl-pill"><span class="dot"></span>Hoạt động ngay — không cần cài đặt phức tạp</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 4 — FEATURES
+  ═══════════════════════════════════════ -->
+  <div class="slide dark-bg" data-slide="4">
+    <div class="slide-header">
+      <div class="slide-tag">Tính năng chính</div>
+      <div class="slide-title">3 tính năng <span>Retailer dùng mỗi ngày</span></div>
+    </div>
+    <div class="slide-body">
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-num">01</div>
+          <div class="feat-icon-wrap">⏱️</div>
+          <h3>Gợi ý nhập hàng đúng lúc</h3>
+          <p>App tự tính toán khi nào cửa hàng bạn cần nhập lại từng sản phẩm dựa trên lịch sử thực tế — không cần nhớ, không cần đoán.</p>
+          <span class="feat-tag">Tránh hết hàng</span>
+        </div>
+        <div class="feat-card">
+          <div class="feat-num">02</div>
+          <div class="feat-icon-wrap">🛒</div>
+          <h3>Gợi ý bán kèm thông minh</h3>
+          <p>AI phát hiện các sản phẩm thường được khách mua cùng nhau tại chính cửa hàng bạn. Tăng giá trị mỗi đơn hàng một cách tự nhiên.</p>
+          <span class="feat-tag">Tăng doanh thu</span>
+        </div>
+        <div class="feat-card">
+          <div class="feat-num">03</div>
+          <div class="feat-icon-wrap">💬</div>
+          <h3>Trợ lý đặt hàng AI</h3>
+          <p>Chỉ cần nhắn tin như nói chuyện: <em style="color:var(--accent2)">"Tạo đơn hàng cho hôm nay"</em> — AI tự lấy dữ liệu, phân tích và trả kết quả ngay tức thì.</p>
+          <span class="feat-tag">Đặt hàng tức thì</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 5 — BUSINESS VALUE
+  ═══════════════════════════════════════ -->
+  <div class="slide light-bg" data-slide="5">
+    <div class="slide-header">
+      <div class="slide-tag">Giá trị cho Retailer</div>
+      <div class="slide-title">Lợi ích <span>cụ thể</span> mỗi chủ cửa hàng nhận được</div>
+    </div>
+    <div class="slide-body">
+      <div class="value-grid">
+        <div class="value-card">
+          <div class="vi">📉</div>
+          <div class="vn">-25%</div>
+          <div class="vt">Hàng tồn kho dư thừa</div>
+          <div class="vd">Nhập đúng loại, đúng lượng — giảm vốn bị chôn, giảm rủi ro hàng ế hết date</div>
+        </div>
+        <div class="value-card">
+          <div class="vi">⚡</div>
+          <div class="vn">10x</div>
+          <div class="vt">Tốc độ lên đơn hàng</div>
+          <div class="vd">Từ 30 phút gọi điện + kiểm kho thủ công → vài giây chat với AI trên app</div>
+        </div>
+        <div class="value-card">
+          <div class="vi">📈</div>
+          <div class="vn">+15%</div>
+          <div class="vt">Doanh thu tăng thêm</div>
+          <div class="vd">Gợi ý bán kèm đúng sản phẩm khách hay mua cùng nhau tại chính cửa hàng bạn</div>
+        </div>
+      </div>
+      <div class="ceo-box">
+        <div class="star">🏪</div>
+        <p>Retailer <strong>không cần biết về AI hay công nghệ</strong> — chỉ cần mở app, nhắn tin và nhận đơn hàng gợi ý. Mọi phân tích phức tạp đã được <strong>AI xử lý hoàn toàn tự động</strong> phía sau.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 6 — ARCHITECTURE
+  ═══════════════════════════════════════ -->
+  <div class="slide dark-bg" data-slide="6">
+    <div class="slide-header">
+      <div class="slide-tag">Kiến trúc kỹ thuật — Dành cho IT / CTO</div>
+      <div class="slide-title">Hệ thống vận hành <span>đằng sau Retailer App</span></div>
+    </div>
+    <div class="slide-body">
+      <div class="arch-container">
+        <div class="arch-pipeline">
+          <h4>Data Pipeline</h4>
+          <div class="pipe-step">
+            <div class="ps-icon">📄</div>
+            <div class="ps-info">
+              <div class="ps-title">order_history.csv</div>
+              <div class="ps-sub">Nguồn dữ liệu đơn hàng gốc</div>
+            </div>
+            <div class="ps-arrow">↓</div>
+          </div>
+          <div class="pipe-step">
+            <div class="ps-icon">🐍</div>
+            <div class="ps-info">
+              <div class="ps-title">stockout_analysis.py</div>
+              <div class="ps-sub">Python / Pandas — T-Cycle &amp; MBA</div>
+            </div>
+            <div class="ps-arrow">↓</div>
+          </div>
+          <div class="pipe-step">
+            <div class="ps-icon">⚡</div>
+            <div class="ps-info">
+              <div class="ps-title">FastAPI Server</div>
+              <div class="ps-sub">REST API + SSE Streaming</div>
+            </div>
+            <div class="ps-arrow">↓</div>
+          </div>
+          <div class="pipe-step">
+            <div class="ps-icon">🤖</div>
+            <div class="ps-info">
+              <div class="ps-title">Ollama — gemma4:e4b</div>
+              <div class="ps-sub">Local LLM, port 11434</div>
+            </div>
+            <div class="ps-arrow">↓</div>
+          </div>
+          <div class="pipe-step">
+            <div class="ps-icon">🌐</div>
+            <div class="ps-info">
+              <div class="ps-title">Chat UI (HTML/SSE)</div>
+              <div class="ps-sub">Streaming, Markdown, Tool Calls hiển thị</div>
+            </div>
+          </div>
+        </div>
+        <div class="arch-tags">
+          <div class="arch-tag-row">
+            <div class="ati">🔒</div>
+            <div>
+              <div class="atl">100% On-Premise</div>
+              <div class="ats">Không gửi dữ liệu ra ngoài. LLM chạy local qua Ollama.</div>
+            </div>
+          </div>
+          <div class="arch-tag-row">
+            <div class="ati">💸</div>
+            <div>
+              <div class="atl">Zero API Cost</div>
+              <div class="ats">Dùng SLM mã nguồn mở (Gemma, Llama...), không tốn phí subscription.</div>
+            </div>
+          </div>
+          <div class="arch-tag-row">
+            <div class="ati">🔌</div>
+            <div>
+              <div class="atl">Tool Calling (Plugin System)</div>
+              <div class="ats">AI tự gọi hàm lấy dữ liệu nội bộ, dễ mở rộng thêm plugin mới.</div>
+            </div>
+          </div>
+          <div class="arch-tag-row">
+            <div class="ati">📡</div>
+            <div>
+              <div class="atl">SSE Streaming</div>
+              <div class="ats">Phản hồi thời gian thực, hiển thị thought process và tool calls.</div>
+            </div>
+          </div>
+          <div class="arch-tag-row">
+            <div class="ati">📁</div>
+            <div>
+              <div class="atl">CSV Upload tự động</div>
+              <div class="ats">Upload file mới → tự phân tích lại, không cần can thiệp thủ công.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 7 — HOW IT WORKS
+  ═══════════════════════════════════════ -->
+  <div class="slide light-bg" data-slide="7">
+    <div class="slide-header">
+      <div class="slide-tag">Trải nghiệm người dùng</div>
+      <div class="slide-title">Retailer dùng app <span>chỉ 4 bước</span></div>
+    </div>
+    <div class="slide-body">
+      <div class="steps-row">
+        <div class="step-card">
+          <div class="step-number">BƯỚC 01</div>
+          <div class="step-icon">📱</div>
+          <h3>Mở Retailer App &amp; Đăng nhập</h3>
+          <p>Chủ cửa hàng mở app trên trình duyệt, chọn tên cửa hàng của mình. Không cần cài đặt, không cần tài khoản phức tạp.</p>
+          <div class="step-cmd" style="color:rgba(255,255,255,.5); font-style:italic; font-family:inherit; font-size:12px">→ Giao diện chọn cửa hàng hiện ra ngay</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">BƯỚC 02</div>
+          <div class="step-icon">💬</div>
+          <h3>Nhắn tin với AI Agent</h3>
+          <p>Gõ yêu cầu tự nhiên bằng tiếng Việt. AI hiểu ngữ cảnh và bắt đầu phân tích dữ liệu của cửa hàng bạn ngay lập tức.</p>
+          <div class="step-cmd" style="color:var(--accent2); font-family:inherit; font-style:italic; font-size:12px">"Hôm nay tôi cần đặt hàng gì?"</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">BƯỚC 03</div>
+          <div class="step-icon">🧠</div>
+          <h3>AI phân tích &amp; gợi ý</h3>
+          <p>Hệ thống tự đọc lịch sử đặt hàng, tính chu kỳ, phát hiện sản phẩm sắp hết và sản phẩm hay bán kèm — rồi trả kết quả.</p>
+          <div class="step-cmd" style="color:rgba(255,255,255,.5); font-style:italic; font-family:inherit; font-size:12px">→ Hiển thị top sản phẩm cần nhập + gợi ý bán kèm</div>
+        </div>
+        <div class="step-card">
+          <div class="step-number">BƯỚC 04</div>
+          <div class="step-icon">✅</div>
+          <h3>Xác nhận &amp; Đặt hàng</h3>
+          <p>Retailer xem lại danh sách gợi ý, điều chỉnh nếu muốn và xác nhận đơn hàng. Nhanh — Đúng — Không bỏ sót hàng.</p>
+          <div class="step-cmd" style="color:var(--accent2); font-family:inherit; font-style:italic; font-size:12px">"Đặt đơn theo gợi ý, thêm 2 thùng mì tôm"</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 8 — PHASE 2 & SAAS
+  ═══════════════════════════════════════ -->
+  <div class="slide dark-bg" data-slide="8">
+    <div class="slide-header">
+      <div class="slide-tag">Roadmap &amp; Mở rộng</div>
+      <div class="slide-title">Phase 2 &amp; Cơ hội <span>SaaS FMCG</span></div>
+    </div>
+    <div class="slide-body">
+      <div class="phase2-grid">
+        <div class="phase-col">
+          <h4 class="col-accent">🚀 Phase 2 — Tính năng sắp tới</h4>
+          <div class="phase-item">
+            <div class="pi-icon">📊</div>
+            <div>
+              <div class="pi-title">Dashboard Analytics thời gian thực</div>
+              <div class="pi-desc">Biểu đồ tồn kho, vòng quay hàng, top sản phẩm — cập nhật live cho quản lý chuỗi.</div>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="pi-icon">🔔</div>
+            <div>
+              <div class="pi-title">Alert tự động nhập hàng</div>
+              <div class="pi-desc">Khi T-Cycle dự báo sắp hết hàng, hệ thống tự gửi email/Zalo/Slack cảnh báo.</div>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="pi-icon">🔗</div>
+            <div>
+              <div class="pi-title">Tích hợp ERP / WMS</div>
+              <div class="pi-desc">Kết nối trực tiếp với SAP, Odoo, MISA để đồng bộ đơn hàng hai chiều tự động.</div>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="pi-icon">🗣️</div>
+            <div>
+              <div class="pi-title">Voice Agent &amp; Mobile App</div>
+              <div class="pi-desc">Sales rep đặt hàng bằng giọng nói trên điện thoại, không cần mở máy tính.</div>
+            </div>
+          </div>
+        </div>
+        <div class="phase-col">
+          <h4 class="col-gold">🌏 Cơ hội SaaS FMCG</h4>
+          <div class="phase-item">
+            <div class="pi-icon">🏢</div>
+            <div>
+              <div class="pi-title">Multi-tenant Architecture</div>
+              <div class="pi-desc">Mỗi nhà phân phối / chuỗi bán lẻ có tenant riêng biệt, dữ liệu hoàn toàn cô lập.</div>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="pi-icon">🎨</div>
+            <div>
+              <div class="pi-title">White-label &amp; Custom Branding</div>
+              <div class="pi-desc">Đối tác có thể đưa logo, màu sắc riêng — bán lại như sản phẩm của chính họ.</div>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="pi-icon">📦</div>
+            <div>
+              <div class="pi-title">Onboard nhanh chuỗi phân phối</div>
+              <div class="pi-desc">Upload 1 file CSV → hệ thống tự cấu hình AI theo ngành hàng, không cần IT.</div>
+            </div>
+          </div>
+          <div class="phase-item">
+            <div class="pi-icon">💰</div>
+            <div>
+              <div class="pi-title">Mô hình doanh thu SaaS</div>
+              <div class="pi-desc">Gói subscription theo số cửa hàng / số user — recurring revenue ổn định.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="saas-badge">
+        <div class="sbi">🎯</div>
+        <p>Thị trường FMCG Việt Nam có <strong>hơn 1.8 triệu điểm bán lẻ</strong>. Giải pháp AI on-premise phù hợp với các doanh nghiệp vừa và nhỏ chưa sẵn sàng dùng cloud — <strong>blue ocean rõ ràng cho SaaS FMCG nội địa</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       SLIDE 9 — CLOSING
+  ═══════════════════════════════════════ -->
+  <div class="slide s9" data-slide="9">
+    <div class="s9-deco"></div>
+    <div class="s9-inner">
+      <div class="s1-badge" style="margin-bottom:24px"><span></span>Retailer App — AI-Powered Ordering</div>
+      <h2>Đặt hàng <em>thông minh hơn</em><br>mỗi ngày cho Retailer</h2>
+      <p class="s9-sub">Đúng hàng · Đúng lúc · Tăng doanh thu · Không bỏ sót cơ hội</p>
+      <div class="s9-cards">
+        <div class="s9-card">
+          <div class="sci">🏪</div>
+          <div class="sct">Dành cho Retailer</div>
+          <div class="scd">Giao diện đơn giản, chủ cửa hàng dùng được ngay</div>
+        </div>
+        <div class="s9-card">
+          <div class="sci">💬</div>
+          <div class="sct">Chat tự nhiên</div>
+          <div class="scd">Nhắn tin bằng tiếng Việt, AI hiểu và phản hồi tức thì</div>
+        </div>
+        <div class="s9-card">
+          <div class="sci">🎯</div>
+          <div class="sct">Gợi ý cá nhân hóa</div>
+          <div class="scd">Dựa trên dữ liệu thực của chính cửa hàng bạn</div>
+        </div>
+        <div class="s9-card">
+          <div class="sci">📈</div>
+          <div class="sct">ROI rõ ràng</div>
+          <div class="scd">Giảm tồn kho dư, tăng upsell, tiết kiệm thời gian sales</div>
+        </div>
+      </div>
+      <div style="color:rgba(255,255,255,.4); font-size:13px; margin-top:8px">
+        📩 ki.dang@ndsvn.vn &nbsp;·&nbsp; Retail AI Agent v1.0 &nbsp;·&nbsp; 2026
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<!-- ── NAVIGATION ── -->
+<nav class="nav">
+  <button id="btnPrev" onclick="changeSlide(-1)" disabled>&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <span class="nav-counter" id="counter">1 / 9</span>
+  <button id="btnNext" onclick="changeSlide(1)">&#8594;</button>
+</nav>
+<div class="kbd-hint">← → để điều hướng &nbsp;|&nbsp; F để toàn màn hình</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const dotsEl = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  let current = 0;
+  const total = slides.length;
+
+  // build dots
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(n, total - 1));
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + total;
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === total - 1;
+  }
+
+  function changeSlide(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    changeSlide(-1);
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  // swipe support
+  let tx = 0;
+  document.addEventListener('touchstart', e => tx = e.touches[0].clientX);
+  document.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) changeSlide(dx < 0 ? 1 : -1);
+  });
+</script>
+</body>
+</html>
